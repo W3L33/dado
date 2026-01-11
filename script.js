@@ -121,7 +121,7 @@ function crearDados() {
     }
 }
 
-/* ================= DIBUJO ================= */
+/* ================= DIBUJAR ================= */
 
 function dibujarDadoEditable() {
     const dado = document.querySelector('.dado[data-index="0"]');
@@ -180,26 +180,28 @@ function colocarPuntos(cara, valor) {
 /* ================= GIRO ================= */
 
 const rotacionesCaras = [
-    {x:0, y:0},     
-    {x:0, y:180},   
-    {x:0, y:-90},   
-    {x:0, y:90},    
-    {x:-90, y:0},   
-    {x:90, y:0}    
+    {x:0, y:0},
+    {x:0, y:180},
+    {x:0, y:-90},
+    {x:0, y:90},
+    {x:-90, y:0},
+    {x:90, y:0}
 ];
 
 function lanzarDado(dado) {
     const caraFinal = Math.floor(Math.random() * 6);
 
+    // Reset limpio del estado 3D
     dado.style.transition = "none";
     dado.style.transform = "rotateX(0deg) rotateY(0deg)";
     dado.offsetHeight;
 
-    const vueltas = 3;
+    // Vueltas naturales
+    const vueltasX = 2 + Math.floor(Math.random() * 2);
+    const vueltasY = 2 + Math.floor(Math.random() * 2);
 
-    // 🔒 NORMALIZACIÓN CLAVE (bug corregido)
-    const finalX = (vueltas * 360 + rotacionesCaras[caraFinal].x) % 360;
-    const finalY = (vueltas * 360 + rotacionesCaras[caraFinal].y) % 360;
+    const finalX = vueltasX * 360 + rotacionesCaras[caraFinal].x;
+    const finalY = vueltasY * 360 + rotacionesCaras[caraFinal].y;
 
     dado.style.transition = "transform 0.9s cubic-bezier(.17,.89,.32,1.49)";
     dado.style.transform = `rotateX(${finalX}deg) rotateY(${finalY}deg)`;
