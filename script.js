@@ -218,3 +218,4 @@ function lanzarTodosDados(){
     document.querySelectorAll(".dado").forEach(dado=>lanzarDado(dado));
 }
 crearDados();
+
