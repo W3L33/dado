@@ -3,7 +3,11 @@ const configuracion = document.getElementById("configuracion");
 const checkboxes = document.querySelectorAll('input[name="dados"]');
 
 let carasInternas = [1, 6, 3, 4, 2, 5];
+let inputsVisibles = true;
 
+/* =======================
+   RADIO BUTTONS
+======================= */
 checkboxes.forEach(cb => {
     cb.addEventListener("change", () => {
         checkboxes.forEach(c => { if (c !== cb) c.checked = false; });
@@ -16,11 +20,13 @@ function getCantidadDados() {
     return sel ? Number(sel.value) : 1;
 }
 
-/* ================= CONFIGURACIÓN ================= */
-
+/* =======================
+   CONFIGURACIÓN
+======================= */
 function crearConfiguracion() {
     const cantidad = getCantidadDados();
     configuracion.innerHTML = "";
+    inputsVisibles = true;
 
     if (cantidad > 1) {
         let html = `<h3 style="color:#eed09d">Personaliza un dado</h3><table>`;
@@ -28,53 +34,41 @@ function crearConfiguracion() {
             html += "<tr>";
             for (let c = 0; c < 3; c++) {
                 const idx = r * 3 + c;
-                html += `<td><input placeholder="Cara ${idx + 1}"></td>`;
+                html += `<td><input placeholder="Cara ${idx + 1}" data-index="${idx}"></td>`;
             }
             html += "</tr>";
         }
-        html += `</table><button id="toggleInputs">Ocultar</button>`;
+        html += `</table>
+                 <button id="toggleInputs" class="btn">Ocultar</button>
+                 <button id="lanzarBtn" class="btn">Lanzar ambos</button>`;
+
         configuracion.innerHTML = html;
 
-        configuracion.querySelectorAll("input").forEach((input, i) => {
+        configuracion.querySelectorAll("input").forEach(input => {
             input.addEventListener("input", () => {
                 actualizarCarasInternas();
-                dibujarDadoEditable();
+                redibujarDadoEditable();
             });
         });
 
-        document.getElementById("toggleInputs").onclick = () => {
-            const table = configuracion.querySelector("table");
-            table.style.display = table.style.display === "none" ? "table" : "none";
-        };
-
-        const btn = document.createElement("button");
-        btn.id = "lanzarBtn";
-        btn.textContent = "Lanzar ambos";
-        btn.onclick = lanzarTodosDados;
-        configuracion.appendChild(btn);
+        document.getElementById("toggleInputs").addEventListener("click", toggleInputs);
+        document.getElementById("lanzarBtn").addEventListener("click", lanzarTodosDados);
     }
 }
 
-/* ================= CARAS ================= */
+function toggleInputs() {
+    const table = configuracion.querySelector("table");
+    const btn = document.getElementById("toggleInputs");
 
-function actualizarCarasInternas() {
-    configuracion.querySelectorAll("input").forEach((input, i) => {
-        const n = Number(input.value);
-        if (!isNaN(n) && n >= 1 && n <= 6) {
-            const op = 7 - n;
-            if (i % 2 === 0) {
-                carasInternas[i] = n;
-                carasInternas[i + 1] = op;
-            } else {
-                carasInternas[i] = n;
-                carasInternas[i - 1] = op;
-            }
-        }
-    });
+    inputsVisibles = !inputsVisibles;
+
+    table.style.display = inputsVisibles ? "table" : "none";
+    btn.textContent = inputsVisibles ? "Ocultar" : "Mostrar";
 }
 
-/* ================= CREAR DADOS ================= */
-
+/* =======================
+   DADOS
+======================= */
 function crearDados() {
     escena.innerHTML = "";
     crearConfiguracion();
@@ -97,84 +91,107 @@ function crearDados() {
 
         escena.appendChild(dado);
 
-        i === 0 && cantidad > 1
-            ? dibujarDadoEditable()
-            : dibujarDadoNormal(dado);
+        if (i === 0 && cantidad > 1) {
+            redibujarDadoEditable();
+        } else {
+            dibujarDadoNormal(dado);
+        }
 
-        dado.onclick = () => lanzarDado(dado);
+        dado.addEventListener("click", () => lanzarDado(dado));
     }
 }
 
-/* ================= DIBUJO ================= */
+/* =======================
+   DIBUJADO
+======================= */
+function actualizarCarasInternas() {
+    const inputs = configuracion.querySelectorAll("input");
 
-function dibujarDadoEditable() {
+    inputs.forEach((input, i) => {
+        const val = input.value.trim();
+        const num = Number(val);
+
+        if (!isNaN(num) && num >= 1 && num <= 6) {
+            const pares = [[0,1],[2,3],[4,5]];
+            for (const [a,b] of pares) {
+                if (i === a) { carasInternas[a] = num; carasInternas[b] = 7 - num; }
+                if (i === b) { carasInternas[b] = num; carasInternas[a] = 7 - num; }
+            }
+        } else if (val) {
+            carasInternas[i] = val;
+        }
+    });
+}
+
+function redibujarDadoEditable() {
     const dado = document.querySelector('.dado[data-index="0"]');
     if (!dado) return;
 
-    dado.querySelectorAll(".cara").forEach((cara, i) => {
+    dado.classList.remove("resultado");
+
+    const caras = dado.querySelectorAll(".cara");
+    caras.forEach((cara, i) => {
         cara.innerHTML = "";
-        colocarPuntos(cara, carasInternas[i]);
         cara.classList.remove("ganadora");
+
+        const valor = carasInternas[i];
+        if (typeof valor === "number") {
+            colocarPuntos(cara, valor);
+        } else {
+            const span = document.createElement("span");
+            span.textContent = valor;
+            cara.appendChild(span);
+        }
     });
 }
 
 function dibujarDadoNormal(dado) {
-    [1,6,3,4,2,5].forEach((v,i)=>{
-        colocarPuntos(dado.querySelectorAll(".cara")[i], v);
+    const valores = [1,6,3,4,2,5];
+    dado.querySelectorAll(".cara").forEach((cara, i) => {
+        colocarPuntos(cara, valores[i]);
+        cara.classList.remove("ganadora");
     });
 }
 
-function colocarPuntos(cara, valor) {
-    cara.innerHTML = "";
-    const layout = {
-        1:[[1,1]], 2:[[0,0],[2,2]], 3:[[0,0],[1,1],[2,2]],
-        4:[[0,0],[0,2],[2,0],[2,2]],
-        5:[[0,0],[0,2],[1,1],[2,0],[2,2]],
-        6:[[0,0],[0,1],[0,2],[2,0],[2,1],[2,2]]
-    };
-    layout[valor]?.forEach(([r,c])=>{
-        const p=document.createElement("div");
-        p.className="punto";
-        p.style.gridRowStart=r+1;
-        p.style.gridColumnStart=c+1;
-        cara.appendChild(p);
-    });
-}
-
-/* ================= GIRO DEFINITIVO ================= */
-
+/* =======================
+   GIRO
+======================= */
 const rotacionesCaras = [
     {x:0,y:0},{x:0,y:180},{x:0,y:-90},
     {x:0,y:90},{x:-90,y:0},{x:90,y:0}
 ];
 
 function lanzarDado(dado) {
+    const index = Number(dado.dataset.index);
     const caraFinal = Math.floor(Math.random() * 6);
 
-    // Giro visual
-    dado.style.transition = "transform 0.9s cubic-bezier(.17,.89,.32,1.49)";
-    dado.style.transform =
-        `rotateX(${720 + rotacionesCaras[caraFinal].x}deg)
-         rotateY(${720 + rotacionesCaras[caraFinal].y}deg)`;
+    dado.classList.remove("resultado");
+    dado.style.transition = "none";
+    dado.style.transform = "rotateX(0deg) rotateY(0deg)";
+    dado.offsetHeight;
 
-    dado.addEventListener("transitionend", function snap() {
-        // 🔒 ENCAJE FINAL LIMPIO (CLAVE)
-        dado.style.transition = "none";
-        dado.style.transform =
-            `rotateX(${rotacionesCaras[caraFinal].x}deg)
-             rotateY(${rotacionesCaras[caraFinal].y}deg)`;
+    const vueltas = 4;
+    const fx = vueltas * 360 + rotacionesCaras[caraFinal].x;
+    const fy = vueltas * 360 + rotacionesCaras[caraFinal].y;
+
+    dado.style.transition = "transform 1.1s cubic-bezier(.25,.8,.25,1)";
+    dado.style.transform = `rotateX(${fx}deg) rotateY(${fy}deg)`;
+
+    dado.addEventListener("transitionend", function fin() {
+        dado.classList.add("resultado");
 
         const mapa = ["frente","atras","derecha","izquierda","arriba","abajo"];
         dado.querySelector(`.${mapa[caraFinal]}`)?.classList.add("ganadora");
 
-        dado.removeEventListener("transitionend", snap);
+        dado.removeEventListener("transitionend", fin);
     });
 }
-
-/* ================= LANZAR ================= */
 
 function lanzarTodosDados() {
     document.querySelectorAll(".dado").forEach(lanzarDado);
 }
 
+/* =======================
+   INIT
+======================= */
 crearDados();
