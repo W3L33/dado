@@ -11,13 +11,24 @@ resizeBg();
 let offset = 0;
 
 function drawBackground() {
-  ctxBg.fillStyle = '#000';
+  ctxBg.fillStyle = '#000'; 
   ctxBg.fillRect(0, 0, bg.width, bg.height);
 
-  for (let i = 0; i < 6; i++) {
+  // Nueva paleta de colores que incluyen verde, caramel, madera, y tonos cálidos
+  const colorPalette = [
+    "hsla(120, 100%, 50%, 0.6)",  
+    "hsla(150, 100%, 40%, 0.6)",  
+    "hsla(30, 60%, 50%, 0.6)",  
+    "hsla(30, 60%, 30%, 0.6)",    
+    "hsla(35, 100%, 40%, 0.6)",   
+    "hsla(45, 80%, 55%, 0.6)",    
+    "rgba(0, 102, 0, 0.8)"    
+  ];
+
+  for (let i = 0; i < 7; i++) {  // Usamos 7 para incluir la línea blanca
     ctxBg.beginPath();
     ctxBg.lineWidth = 2;
-    ctxBg.strokeStyle = `hsla(${180 + i * 25},100%,60%,0.6)`;
+    ctxBg.strokeStyle = colorPalette[i % colorPalette.length];  // Usamos la paleta de colores variados
     ctxBg.shadowColor = ctxBg.strokeStyle;
     ctxBg.shadowBlur = 20;
 
