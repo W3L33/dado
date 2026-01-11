@@ -28,61 +28,47 @@ function crearConfiguracion() {
             html += "<tr>";
             for (let c = 0; c < 3; c++) {
                 const idx = r * 3 + c;
-                html += `<td><input placeholder="Cara ${idx + 1}" id="cara${idx}"></td>`;
+                html += `<td><input placeholder="Cara ${idx + 1}"></td>`;
             }
             html += "</tr>";
         }
-        html += `</table><button id="toggleInputs" class="btn">Ocultar</button>`;
+        html += `</table><button id="toggleInputs">Ocultar</button>`;
         configuracion.innerHTML = html;
 
-        configuracion.querySelectorAll("input").forEach(input => {
+        configuracion.querySelectorAll("input").forEach((input, i) => {
             input.addEventListener("input", () => {
                 actualizarCarasInternas();
                 dibujarDadoEditable();
             });
         });
 
-        const toggleBtn = document.getElementById("toggleInputs");
-        toggleBtn.addEventListener("click", () => {
+        document.getElementById("toggleInputs").onclick = () => {
             const table = configuracion.querySelector("table");
-            if (table.style.display === "none") {
-                table.style.display = "table";
-                toggleBtn.textContent = "Ocultar";
-            } else {
-                table.style.display = "none";
-                toggleBtn.textContent = "Mostrar";
-            }
-        });
+            table.style.display = table.style.display === "none" ? "table" : "none";
+        };
 
-        const lanzarBtn = document.createElement("button");
-        lanzarBtn.textContent = "Lanzar ambos";
-        lanzarBtn.id = "lanzarBtn";
-        lanzarBtn.addEventListener("click", lanzarTodosDados);
-        configuracion.appendChild(lanzarBtn);
+        const btn = document.createElement("button");
+        btn.id = "lanzarBtn";
+        btn.textContent = "Lanzar ambos";
+        btn.onclick = lanzarTodosDados;
+        configuracion.appendChild(btn);
     }
 }
 
-/* ================= CARAS INTERNAS ================= */
+/* ================= CARAS ================= */
 
 function actualizarCarasInternas() {
-    const inputs = configuracion.querySelectorAll("input");
-    if (!inputs.length) return;
-
-    inputs.forEach((input, i) => {
-        const val = input.value.trim();
-        const num = Number(val);
-
-        if (!isNaN(num) && num >= 1 && num <= 6) {
-            switch (i) {
-                case 0: carasInternas[0] = num; carasInternas[1] = 7 - num; break;
-                case 1: carasInternas[1] = num; carasInternas[0] = 7 - num; break;
-                case 2: carasInternas[2] = num; carasInternas[3] = 7 - num; break;
-                case 3: carasInternas[3] = num; carasInternas[2] = 7 - num; break;
-                case 4: carasInternas[4] = num; carasInternas[5] = 7 - num; break;
-                case 5: carasInternas[5] = num; carasInternas[4] = 7 - num; break;
+    configuracion.querySelectorAll("input").forEach((input, i) => {
+        const n = Number(input.value);
+        if (!isNaN(n) && n >= 1 && n <= 6) {
+            const op = 7 - n;
+            if (i % 2 === 0) {
+                carasInternas[i] = n;
+                carasInternas[i + 1] = op;
+            } else {
+                carasInternas[i] = n;
+                carasInternas[i - 1] = op;
             }
-        } else if (val) {
-            carasInternas[i] = val;
         }
     });
 }
@@ -111,113 +97,84 @@ function crearDados() {
 
         escena.appendChild(dado);
 
-        if (i === 0 && cantidad > 1) {
-            dibujarDadoEditable();
-        } else {
-            dibujarDadoNormal(dado);
-        }
+        i === 0 && cantidad > 1
+            ? dibujarDadoEditable()
+            : dibujarDadoNormal(dado);
 
-        dado.addEventListener("click", () => lanzarDado(dado));
+        dado.onclick = () => lanzarDado(dado);
     }
 }
 
-/* ================= DIBUJAR ================= */
+/* ================= DIBUJO ================= */
 
 function dibujarDadoEditable() {
     const dado = document.querySelector('.dado[data-index="0"]');
     if (!dado) return;
 
-    const caras = dado.querySelectorAll(".cara");
-
-    caras.forEach((cara, i) => {
+    dado.querySelectorAll(".cara").forEach((cara, i) => {
         cara.innerHTML = "";
-        const valor = carasInternas[i];
-
-        if (typeof valor === "number") {
-            colocarPuntos(cara, valor);
-        } else if (valor) {
-            const span = document.createElement("span");
-            span.textContent = valor;
-            cara.appendChild(span);
-        }
-
+        colocarPuntos(cara, carasInternas[i]);
         cara.classList.remove("ganadora");
     });
 }
 
 function dibujarDadoNormal(dado) {
-    const valores = [1, 6, 3, 4, 2, 5];
-    dado.querySelectorAll(".cara").forEach((cara, i) => {
-        colocarPuntos(cara, valores[i]);
-        cara.classList.remove("ganadora");
+    [1,6,3,4,2,5].forEach((v,i)=>{
+        colocarPuntos(dado.querySelectorAll(".cara")[i], v);
     });
 }
-
-/* ================= PUNTOS ================= */
 
 function colocarPuntos(cara, valor) {
     cara.innerHTML = "";
     const layout = {
-        1: [[1,1]],
-        2: [[0,0],[2,2]],
-        3: [[0,0],[1,1],[2,2]],
-        4: [[0,0],[0,2],[2,0],[2,2]],
-        5: [[0,0],[0,2],[1,1],[2,0],[2,2]],
-        6: [[0,0],[0,1],[0,2],[2,0],[2,1],[2,2]]
+        1:[[1,1]], 2:[[0,0],[2,2]], 3:[[0,0],[1,1],[2,2]],
+        4:[[0,0],[0,2],[2,0],[2,2]],
+        5:[[0,0],[0,2],[1,1],[2,0],[2,2]],
+        6:[[0,0],[0,1],[0,2],[2,0],[2,1],[2,2]]
     };
-
-    if (layout[valor]) {
-        layout[valor].forEach(([r, c]) => {
-            const p = document.createElement("div");
-            p.className = "punto";
-            p.style.gridRowStart = r + 1;
-            p.style.gridColumnStart = c + 1;
-            cara.appendChild(p);
-        });
-    }
+    layout[valor]?.forEach(([r,c])=>{
+        const p=document.createElement("div");
+        p.className="punto";
+        p.style.gridRowStart=r+1;
+        p.style.gridColumnStart=c+1;
+        cara.appendChild(p);
+    });
 }
 
-/* ================= GIRO ================= */
+/* ================= GIRO DEFINITIVO ================= */
 
 const rotacionesCaras = [
-    {x:0, y:0},
-    {x:0, y:180},
-    {x:0, y:-90},
-    {x:0, y:90},
-    {x:-90, y:0},
-    {x:90, y:0}
+    {x:0,y:0},{x:0,y:180},{x:0,y:-90},
+    {x:0,y:90},{x:-90,y:0},{x:90,y:0}
 ];
 
 function lanzarDado(dado) {
     const caraFinal = Math.floor(Math.random() * 6);
 
-    // Reset limpio del estado 3D
-    dado.style.transition = "none";
-    dado.style.transform = "rotateX(0deg) rotateY(0deg)";
-    dado.offsetHeight;
-
-    // Vueltas naturales
-    const vueltasX = 2 + Math.floor(Math.random() * 2);
-    const vueltasY = 2 + Math.floor(Math.random() * 2);
-
-    const finalX = vueltasX * 360 + rotacionesCaras[caraFinal].x;
-    const finalY = vueltasY * 360 + rotacionesCaras[caraFinal].y;
-
+    // Giro visual
     dado.style.transition = "transform 0.9s cubic-bezier(.17,.89,.32,1.49)";
-    dado.style.transform = `rotateX(${finalX}deg) rotateY(${finalY}deg)`;
+    dado.style.transform =
+        `rotateX(${720 + rotacionesCaras[caraFinal].x}deg)
+         rotateY(${720 + rotacionesCaras[caraFinal].y}deg)`;
 
-    dado.addEventListener("transitionend", function glow() {
+    dado.addEventListener("transitionend", function snap() {
+        // 🔒 ENCAJE FINAL LIMPIO (CLAVE)
+        dado.style.transition = "none";
+        dado.style.transform =
+            `rotateX(${rotacionesCaras[caraFinal].x}deg)
+             rotateY(${rotacionesCaras[caraFinal].y}deg)`;
+
         const mapa = ["frente","atras","derecha","izquierda","arriba","abajo"];
-        const cara = dado.querySelector(`.${mapa[caraFinal]}`);
-        if (cara) cara.classList.add("ganadora");
-        dado.removeEventListener("transitionend", glow);
+        dado.querySelector(`.${mapa[caraFinal]}`)?.classList.add("ganadora");
+
+        dado.removeEventListener("transitionend", snap);
     });
 }
 
 /* ================= LANZAR ================= */
 
 function lanzarTodosDados() {
-    document.querySelectorAll(".dado").forEach(dado => lanzarDado(dado));
+    document.querySelectorAll(".dado").forEach(lanzarDado);
 }
 
 crearDados();
