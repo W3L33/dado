@@ -8,15 +8,6 @@ body {
     display: flex;
     flex-direction: column;
     align-items: center;
-
-}
-
-select {
-    padding: 6px;
-    margin: 4px;
-    border-radius: 6px;
-    border: none;
-    font-size: 16px;
 }
 
 .escena {
@@ -24,21 +15,29 @@ select {
     justify-content: center;
     gap: 40px;
     margin-top: 50px;
-    perspective: 1300px;
+    perspective: 1200px;
+    perspective-origin: center;
 }
 
+/* ================= DADO ================= */
 .dado {
     width: 195px;
     height: 195px;
     position: relative;
     transform-style: preserve-3d;
+    transform-origin: center center;
     cursor: pointer;
+
+    /* estabilidad móvil */
+    will-change: transform;
 }
 
+/* ================= CARAS ================= */
 .cara {
     position: absolute;
     width: 195px;
     height: 195px;
+
     background: rgba(255, 255, 255, 0.1);
     backdrop-filter: blur(18px);
     box-shadow:
@@ -47,22 +46,21 @@ select {
     border: 1px solid rgba(255,255,255,0.3);
     border-radius: 12px;
 
-    display: grid;                  
-    grid-template-columns: repeat(3, 1fr);
-    grid-template-rows: repeat(3, 1fr);
+    display: grid;
+    grid-template-columns: repeat(3,1fr);
+    grid-template-rows: repeat(3,1fr);
     align-items: center;
     justify-items: center;
 
-    font-size: 46px;                
+    font-size: 46px;
     font-weight: bold;
-}
-.titulo-grande {
-    font-size: 5em;
-    font-weight: bold;  
-    text-align: center;  
-    color: #eed09d;
+
+    /* CLAVE PARA MÓVIL */
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
 }
 
+/* ================= POSICIÓN ================= */
 .frente     { transform: rotateY(0deg) translateZ(97.5px); }
 .atras      { transform: rotateY(180deg) translateZ(97.5px); }
 .derecha    { transform: rotateY(90deg) translateZ(97.5px); }
@@ -70,6 +68,7 @@ select {
 .arriba     { transform: rotateX(90deg) translateZ(97.5px); }
 .abajo      { transform: rotateX(-90deg) translateZ(97.5px); }
 
+/* ================= GANADOR ================= */
 .cara.ganadora {
     border: 2px solid #00ff6a;
     box-shadow:
@@ -78,110 +77,32 @@ select {
         inset 0 0 10px rgba(0,255,106,0.6);
 }
 
+/* ================= PUNTOS ================= */
 .punto {
-    width: 30px;       
+    width: 30px;
     height: 30px;
     background: white;
     border-radius: 50%;
 }
 
+/* ================= UI ================= */
 .configuracion {
     margin-top: 20px;
     display: flex;
     flex-direction: column;
-    align-items: center;       
+    align-items: center;
     gap: 10px;
 }
 
-.configuracion table {
-    border-collapse: collapse;
-}
-
-.configuracion td {
-    padding: 4px;
-}
-
-.configuracion input {
-    font-size: 18px;
-    width: 60px;
-    text-align: center;
-}
-
-#toggleInputs {
-    margin-top: 10px;
-    padding: 8px 16px;
-    font-size: 16px;
-    border: none;
-    border-radius: 6px;
-    background-color: #00ff6a;
-    color: black;
-    cursor: pointer;
-}
-
-#toggleInputs:hover {
-    background-color: #00cc52;
-}
-#lanzarBtn {
-    margin-top: 10px;
-    padding: 8px 16px;
-    font-size: 16px;
-    border: none;
-    border-radius: 6px;
-    background-color: #00ff6a;
-    color: black;
-    cursor: pointer;
-}
-
-#lanzarBtn:hover {
-    background-color: #00cc52;
-}
-
-footer {
-    margin-top: 40px;
-    font-size: 14px;
-    color: #aaa;
-}
-
-footer a {
-    color: #ffdb58;
-    text-decoration: none;
-    font-weight: bold;
-}
-
-footer a:hover {
-    text-decoration: underline;
-
-}
-.cara span {
-    display: inline-block;
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    color: white;
-    font-weight: bold;
-    white-space: nowrap;
-    max-width: 90%;
-    max-height: 90%;
-    font-size: clamp(8px, 6vw, 46px);
-    text-align: center;
-}
-
 input[type="radio"] {
-    -webkit-appearance: none;  
-    -moz-appearance: none;
     appearance: none;
-    width: 16px;  
+    width: 16px;
     height: 16px;
-    background-color: white;  
-    border-radius: 50%;  
-    position: relative; 
+    background-color: white;
+    border-radius: 50%;
     cursor: pointer;
-
 }
 
 input[type="radio"]:checked {
-    background-color: #D17F3E; 
-    width:16px;
-    height:16px;
+    background-color: #D17F3E;
 }
