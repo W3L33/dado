@@ -16,7 +16,7 @@ function getCantidadDados() {
     return sel ? Number(sel.value) : 1;
 }
 
-/* ---------------- CONFIGURACIÓN ---------------- */
+/* ================= CONFIGURACIÓN ================= */
 
 function crearConfiguracion() {
     const cantidad = getCantidadDados();
@@ -38,7 +38,7 @@ function crearConfiguracion() {
         configuracion.querySelectorAll("input").forEach(input => {
             input.addEventListener("input", () => {
                 actualizarCarasInternas();
-                dibujarDadoEditable(); // 👈 CLAVE
+                dibujarDadoEditable();
             });
         });
 
@@ -62,7 +62,7 @@ function crearConfiguracion() {
     }
 }
 
-/* ---------------- ACTUALIZAR CARAS ---------------- */
+/* ================= CARAS INTERNAS ================= */
 
 function actualizarCarasInternas() {
     const inputs = configuracion.querySelectorAll("input");
@@ -87,7 +87,7 @@ function actualizarCarasInternas() {
     });
 }
 
-/* ---------------- CREAR DADOS ---------------- */
+/* ================= CREAR DADOS ================= */
 
 function crearDados() {
     escena.innerHTML = "";
@@ -112,7 +112,7 @@ function crearDados() {
         escena.appendChild(dado);
 
         if (i === 0 && cantidad > 1) {
-            dibujarDadoEditable(); // 👈 SOLO ESTE DADO
+            dibujarDadoEditable();
         } else {
             dibujarDadoNormal(dado);
         }
@@ -121,7 +121,7 @@ function crearDados() {
     }
 }
 
-/* ---------------- DIBUJAR DADOS ---------------- */
+/* ================= DIBUJO ================= */
 
 function dibujarDadoEditable() {
     const dado = document.querySelector('.dado[data-index="0"]');
@@ -153,7 +153,7 @@ function dibujarDadoNormal(dado) {
     });
 }
 
-/* ---------------- PUNTOS ---------------- */
+/* ================= PUNTOS ================= */
 
 function colocarPuntos(cara, valor) {
     cara.innerHTML = "";
@@ -177,15 +177,15 @@ function colocarPuntos(cara, valor) {
     }
 }
 
-/* ---------------- GIRO ---------------- */
+/* ================= GIRO ================= */
 
 const rotacionesCaras = [
-    {x:0, y:0},
-    {x:0, y:180},
-    {x:0, y:-90},
-    {x:0, y:90},
-    {x:-90, y:0},
-    {x:90, y:0}
+    {x:0, y:0},     
+    {x:0, y:180},   
+    {x:0, y:-90},   
+    {x:0, y:90},    
+    {x:-90, y:0},   
+    {x:90, y:0}    
 ];
 
 function lanzarDado(dado) {
@@ -196,8 +196,10 @@ function lanzarDado(dado) {
     dado.offsetHeight;
 
     const vueltas = 3;
-    const finalX = vueltas * 360 + rotacionesCaras[caraFinal].x;
-    const finalY = vueltas * 360 + rotacionesCaras[caraFinal].y;
+
+    // 🔒 NORMALIZACIÓN CLAVE (bug corregido)
+    const finalX = (vueltas * 360 + rotacionesCaras[caraFinal].x) % 360;
+    const finalY = (vueltas * 360 + rotacionesCaras[caraFinal].y) % 360;
 
     dado.style.transition = "transform 0.9s cubic-bezier(.17,.89,.32,1.49)";
     dado.style.transform = `rotateX(${finalX}deg) rotateY(${finalY}deg)`;
@@ -209,6 +211,8 @@ function lanzarDado(dado) {
         dado.removeEventListener("transitionend", glow);
     });
 }
+
+/* ================= LANZAR ================= */
 
 function lanzarTodosDados() {
     document.querySelectorAll(".dado").forEach(dado => lanzarDado(dado));
