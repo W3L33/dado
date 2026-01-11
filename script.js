@@ -2,23 +2,11 @@ const escena = document.getElementById("escena");
 const configuracion = document.getElementById("configuracion");
 const checkboxes = document.querySelectorAll('input[name="dados"]');
 
-/* caras opuestas siempre suman 7 */
 let carasInternas = [1, 6, 3, 4, 2, 5];
 
-/* rotaciones finales por cara */
-const rotacionesCaras = [
-    { x: 0,   y: 0   },   // frente
-    { x: 0,   y: 180 },   // atrás
-    { x: 0,   y: -90 },   // derecha
-    { x: 0,   y: 90  },   // izquierda
-    { x: -90, y: 0   },   // arriba
-    { x: 90,  y: 0   }    // abajo
-];
-
-/* ================== RADIO ================== */
 checkboxes.forEach(cb => {
     cb.addEventListener("change", () => {
-        checkboxes.forEach(c => c !== cb && (c.checked = false));
+        checkboxes.forEach(c => { if (c !== cb) c.checked = false; });
         crearDados();
     });
 });
@@ -28,17 +16,14 @@ function getCantidadDados() {
     return sel ? Number(sel.value) : 1;
 }
 
-/* ================== CONFIGURACIÓN ================== */
+/* ---------------- CONFIGURACIÓN ---------------- */
+
 function crearConfiguracion() {
     const cantidad = getCantidadDados();
     configuracion.innerHTML = "";
 
     if (cantidad > 1) {
-        let html = `
-            <h3 style="color:#eed09d">Personaliza un dado</h3>
-            <table>
-        `;
-
+        let html = `<h3 style="color:#eed09d">Personaliza un dado</h3><table>`;
         for (let r = 0; r < 2; r++) {
             html += "<tr>";
             for (let c = 0; c < 3; c++) {
@@ -47,23 +32,16 @@ function crearConfiguracion() {
             }
             html += "</tr>";
         }
-
-        html += `
-            </table>
-            <button id="toggleInputs" class="btn">Ocultar</button>
-        `;
-
+        html += `</table><button id="toggleInputs" class="btn">Ocultar</button>`;
         configuracion.innerHTML = html;
 
-        /* inputs */
         configuracion.querySelectorAll("input").forEach(input => {
             input.addEventListener("input", () => {
                 actualizarCarasInternas();
-                dibujarDadoEditable();
+                dibujarDadoEditable(); // 👈 CLAVE
             });
         });
 
-        /* mostrar / ocultar */
         const toggleBtn = document.getElementById("toggleInputs");
         toggleBtn.addEventListener("click", () => {
             const table = configuracion.querySelector("table");
@@ -76,69 +54,41 @@ function crearConfiguracion() {
             }
         });
 
-        /* lanzar ambos */
         const lanzarBtn = document.createElement("button");
         lanzarBtn.textContent = "Lanzar ambos";
-        lanzarBtn.className = "btn";
+        lanzarBtn.id = "lanzarBtn";
         lanzarBtn.addEventListener("click", lanzarTodosDados);
         configuracion.appendChild(lanzarBtn);
     }
 }
 
-/* ================== CARAS INTERNAS ================== */
+/* ---------------- ACTUALIZAR CARAS ---------------- */
+
 function actualizarCarasInternas() {
     const inputs = configuracion.querySelectorAll("input");
+    if (!inputs.length) return;
+
     inputs.forEach((input, i) => {
-        const val = Number(input.value.trim());
-        if (!isNaN(val) && val >= 1 && val <= 6) {
+        const val = input.value.trim();
+        const num = Number(val);
+
+        if (!isNaN(num) && num >= 1 && num <= 6) {
+            switch (i) {
+                case 0: carasInternas[0] = num; carasInternas[1] = 7 - num; break;
+                case 1: carasInternas[1] = num; carasInternas[0] = 7 - num; break;
+                case 2: carasInternas[2] = num; carasInternas[3] = 7 - num; break;
+                case 3: carasInternas[3] = num; carasInternas[2] = 7 - num; break;
+                case 4: carasInternas[4] = num; carasInternas[5] = 7 - num; break;
+                case 5: carasInternas[5] = num; carasInternas[4] = 7 - num; break;
+            }
+        } else if (val) {
             carasInternas[i] = val;
-            carasInternas[5 - i] = 7 - val;
         }
     });
 }
 
-/* ================== DIBUJADO ================== */
-function dibujarDadoEditable() {
-    const dado = document.querySelector('.dado[data-index="0"]');
-    if (!dado) return;
+/* ---------------- CREAR DADOS ---------------- */
 
-    const caras = dado.querySelectorAll(".cara");
-    caras.forEach((cara, i) => {
-        colocarPuntos(cara, carasInternas[i]);
-        cara.classList.remove("ganadora");
-    });
-}
-
-function dibujarDadoNormal(dado) {
-    const valores = [1, 6, 3, 4, 2, 5];
-    dado.querySelectorAll(".cara").forEach((cara, i) => {
-        colocarPuntos(cara, valores[i]);
-        cara.classList.remove("ganadora");
-    });
-}
-
-/* ================== PUNTOS ================== */
-function colocarPuntos(cara, valor) {
-    cara.innerHTML = "";
-    const layout = {
-        1: [[1,1]],
-        2: [[0,0],[2,2]],
-        3: [[0,0],[1,1],[2,2]],
-        4: [[0,0],[0,2],[2,0],[2,2]],
-        5: [[0,0],[0,2],[1,1],[2,0],[2,2]],
-        6: [[0,0],[0,1],[0,2],[2,0],[2,1],[2,2]]
-    };
-
-    layout[valor].forEach(([r, c]) => {
-        const p = document.createElement("div");
-        p.className = "punto";
-        p.style.gridRowStart = r + 1;
-        p.style.gridColumnStart = c + 1;
-        cara.appendChild(p);
-    });
-}
-
-/* ================== CREAR DADOS ================== */
 function crearDados() {
     escena.innerHTML = "";
     crearConfiguracion();
@@ -162,7 +112,7 @@ function crearDados() {
         escena.appendChild(dado);
 
         if (i === 0 && cantidad > 1) {
-            dibujarDadoEditable();
+            dibujarDadoEditable(); // 👈 SOLO ESTE DADO
         } else {
             dibujarDadoNormal(dado);
         }
@@ -171,33 +121,97 @@ function crearDados() {
     }
 }
 
-/* ================== LANZAR ================== */
+/* ---------------- DIBUJAR DADOS ---------------- */
+
+function dibujarDadoEditable() {
+    const dado = document.querySelector('.dado[data-index="0"]');
+    if (!dado) return;
+
+    const caras = dado.querySelectorAll(".cara");
+
+    caras.forEach((cara, i) => {
+        cara.innerHTML = "";
+        const valor = carasInternas[i];
+
+        if (typeof valor === "number") {
+            colocarPuntos(cara, valor);
+        } else if (valor) {
+            const span = document.createElement("span");
+            span.textContent = valor;
+            cara.appendChild(span);
+        }
+
+        cara.classList.remove("ganadora");
+    });
+}
+
+function dibujarDadoNormal(dado) {
+    const valores = [1, 6, 3, 4, 2, 5];
+    dado.querySelectorAll(".cara").forEach((cara, i) => {
+        colocarPuntos(cara, valores[i]);
+        cara.classList.remove("ganadora");
+    });
+}
+
+/* ---------------- PUNTOS ---------------- */
+
+function colocarPuntos(cara, valor) {
+    cara.innerHTML = "";
+    const layout = {
+        1: [[1,1]],
+        2: [[0,0],[2,2]],
+        3: [[0,0],[1,1],[2,2]],
+        4: [[0,0],[0,2],[2,0],[2,2]],
+        5: [[0,0],[0,2],[1,1],[2,0],[2,2]],
+        6: [[0,0],[0,1],[0,2],[2,0],[2,1],[2,2]]
+    };
+
+    if (layout[valor]) {
+        layout[valor].forEach(([r, c]) => {
+            const p = document.createElement("div");
+            p.className = "punto";
+            p.style.gridRowStart = r + 1;
+            p.style.gridColumnStart = c + 1;
+            cara.appendChild(p);
+        });
+    }
+}
+
+/* ---------------- GIRO ---------------- */
+
+const rotacionesCaras = [
+    {x:0, y:0},
+    {x:0, y:180},
+    {x:0, y:-90},
+    {x:0, y:90},
+    {x:-90, y:0},
+    {x:90, y:0}
+];
+
 function lanzarDado(dado) {
     const caraFinal = Math.floor(Math.random() * 6);
-    const { x, y } = rotacionesCaras[caraFinal];
 
-    /* giro rápido */
     dado.style.transition = "none";
-    dado.style.transform = "rotateX(720deg) rotateY(720deg)";
+    dado.style.transform = "rotateX(0deg) rotateY(0deg)";
     dado.offsetHeight;
 
-    /* asentamiento realista */
-    dado.style.transition = "transform 0.9s cubic-bezier(.17,.89,.32,1.49)";
-    dado.style.transform = `rotateX(${x}deg) rotateY(${y}deg)`;
+    const vueltas = 3;
+    const finalX = vueltas * 360 + rotacionesCaras[caraFinal].x;
+    const finalY = vueltas * 360 + rotacionesCaras[caraFinal].y;
 
-    dado.addEventListener("transitionend", function fin() {
+    dado.style.transition = "transform 0.9s cubic-bezier(.17,.89,.32,1.49)";
+    dado.style.transform = `rotateX(${finalX}deg) rotateY(${finalY}deg)`;
+
+    dado.addEventListener("transitionend", function glow() {
         const mapa = ["frente","atras","derecha","izquierda","arriba","abajo"];
-        dado.querySelectorAll(".cara").forEach(c => c.classList.remove("ganadora"));
-        dado.querySelector(`.${mapa[caraFinal]}`)?.classList.add("ganadora");
-        dado.removeEventListener("transitionend", fin);
+        const cara = dado.querySelector(`.${mapa[caraFinal]}`);
+        if (cara) cara.classList.add("ganadora");
+        dado.removeEventListener("transitionend", glow);
     });
 }
 
 function lanzarTodosDados() {
-    document.querySelectorAll(".dado").forEach((dado, i) => {
-        setTimeout(() => lanzarDado(dado), i * 120);
-    });
+    document.querySelectorAll(".dado").forEach(dado => lanzarDado(dado));
 }
 
-/* ================== INIT ================== */
 crearDados();
