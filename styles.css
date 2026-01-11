@@ -77,12 +77,12 @@ canvas {
     height: 100%;
 }
 
-.frente     { transform: rotateY(0deg) translateZ(97.5px); }
-.atras      { transform: rotateY(180deg) translateZ(97.5px); }
-.derecha    { transform: rotateY(90deg) translateZ(97.5px); }
-.izquierda  { transform: rotateY(-90deg) translateZ(97.5px); }
-.arriba     { transform: rotateX(90deg) translateZ(97.5px); }
-.abajo      { transform: rotateX(-90deg) translateZ(97.5px); }
+.frente     { transform: rotateY(0deg) translateZ(98px); }
+.atras      { transform: rotateY(180deg) translateZ(98px); }
+.derecha    { transform: rotateY(90deg) translateZ(98px); }
+.izquierda  { transform: rotateY(-90deg) translateZ(98px); }
+.arriba     { transform: rotateX(90deg) translateZ(98px); }
+.abajo      { transform: rotateX(-90deg) translateZ(98px); }
 
 .cara.ganadora {
     border: 2px solid #00ff6a;
