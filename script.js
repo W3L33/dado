@@ -3,6 +3,7 @@ const configuracion = document.getElementById("configuracion");
 const radios = document.querySelectorAll('input[name="dados"]');
 
 let carasInternas = [1, 6, 3, 4, 2, 5];
+let inputsVisibles = true;
 
 /* ======================
    RADIO BUTTONS
@@ -24,6 +25,7 @@ function getCantidadDados() {
 ====================== */
 function crearConfiguracion() {
     configuracion.innerHTML = "";
+    inputsVisibles = true;
 
     if (getCantidadDados() === 2) {
         let html = `<h3 style="color:#eed09d">Personaliza un dado</h3><table>`;
@@ -39,7 +41,7 @@ function crearConfiguracion() {
         configuracion.innerHTML = html;
 
         configuracion.querySelectorAll("input").forEach(inp => {
-            inp.addEventListener("input", e => {
+            inp.addEventListener("input", () => {
                 actualizarCarasInternas();
                 dibujarDadoEditable();
             });
@@ -50,7 +52,6 @@ function crearConfiguracion() {
     }
 }
 
-let inputsVisibles = true;
 function toggleInputs() {
     const table = configuracion.querySelector("table");
     const btn = document.getElementById("toggleInputs");
@@ -105,8 +106,8 @@ function actualizarCarasInternas() {
         if (!isNaN(n) && n >= 1 && n <= 6) {
             const pares = [[0,1],[2,3],[4,5]];
             pares.forEach(([a,b]) => {
-                if (i === a) { carasInternas[a] = n; carasInternas[b] = 7-n; }
-                if (i === b) { carasInternas[b] = n; carasInternas[a] = 7-n; }
+                if (i === a) { carasInternas[a] = n; carasInternas[b] = 7 - n; }
+                if (i === b) { carasInternas[b] = n; carasInternas[a] = 7 - n; }
             });
         } else if (v) {
             carasInternas[i] = v;
@@ -121,19 +122,21 @@ function dibujarDadoEditable() {
     dado.querySelectorAll(".cara").forEach((cara, i) => {
         cara.innerHTML = "";
         const val = carasInternas[i];
+
         if (typeof val === "number") {
             colocarPuntos(cara, val);
         } else if (val) {
-            const s = document.createElement("span");
-            s.textContent = val;
-            cara.appendChild(s);
+            const span = document.createElement("span");
+            span.textContent = val;
+            cara.appendChild(span);
         }
+
         cara.classList.remove("ganadora");
     });
 }
 
 function dibujarDadoNormal(dado) {
-    const vals = [1,6,3,4,2,5];
+    const vals = [1, 6, 3, 4, 2, 5];
     dado.querySelectorAll(".cara").forEach((cara, i) => {
         colocarPuntos(cara, vals[i]);
         cara.classList.remove("ganadora");
@@ -160,31 +163,38 @@ function colocarPuntos(cara, valor) {
 }
 
 /* ======================
-   GIRO (ESTABLE)
+   GIRO (ESTABLE iOS)
 ====================== */
-const rot = [
-    {x:0,y:0},{x:0,y:180},{x:0,y:-90},
-    {x:0,y:90},{x:-90,y:0},{x:90,y:0}
+const rotaciones = [
+    {x:0,y:0},      // frente
+    {x:0,y:180},    // atrás
+    {x:0,y:-90},    // derecha
+    {x:0,y:90},     // izquierda
+    {x:-90,y:0},    // arriba
+    {x:90,y:0}      // abajo
 ];
 
 function lanzarDado(dado) {
     const caraFinal = Math.floor(Math.random() * 6);
+    const epsilon = 0.01; // FIX WebKit (clave)
 
     dado.style.transition = "none";
     dado.style.transform = "rotateX(0deg) rotateY(0deg)";
     dado.offsetHeight;
 
     const vueltas = 4;
-    const fx = vueltas * 360 + rot[caraFinal].x;
-    const fy = vueltas * 360 + rot[caraFinal].y;
+    const fx = vueltas * 360 + rotaciones[caraFinal].x + epsilon;
+    const fy = vueltas * 360 + rotaciones[caraFinal].y + epsilon;
 
     dado.style.transition = "transform 1.1s cubic-bezier(.25,.8,.25,1)";
     dado.style.transform = `rotateX(${fx}deg) rotateY(${fy}deg)`;
 
     dado.addEventListener("transitionend", function fin() {
         dado.querySelectorAll(".cara").forEach(c => c.classList.remove("ganadora"));
+
         const mapa = ["frente","atras","derecha","izquierda","arriba","abajo"];
         dado.querySelector("." + mapa[caraFinal])?.classList.add("ganadora");
+
         dado.removeEventListener("transitionend", fin);
     });
 }
