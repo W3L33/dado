@@ -175,7 +175,7 @@ footer a:hover {
     transform: translate(-50%, -50%);
     color: white;
     font-weight: bold;
-    white-space: nowrap;
+    white-space: normal;
     max-width: 90%;
     max-height: 90%;
     font-size: clamp(8px, 6vw, 46px);
